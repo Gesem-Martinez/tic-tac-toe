@@ -1,40 +1,78 @@
 class GameBoard {
   gameboardArr = [
-    ["", "", ""], 
-    ["", "", ""], 
-    ["", "", ""]
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
   ];
 
   winConditions = [
-    [[0, 0], [0, 1], [0, 2]],
-    [[1, 0], [1, 1], [1, 2]],
-    [[2, 0], [2, 1], [2, 2]],
+    [
+      [0, 0],
+      [0, 1],
+      [0, 2],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [1, 2],
+    ],
+    [
+      [2, 0],
+      [2, 1],
+      [2, 2],
+    ],
 
-    [[0, 0], [1, 0], [2, 0]],
-    [[0, 1], [1, 1], [2, 1]],
-    [[0, 2], [1, 2], [2, 2]],
+    [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [0, 2],
+      [1, 2],
+      [2, 2],
+    ],
 
-    [[0, 0], [1, 1], [2, 2]],
-    [[0, 2], [1, 1], [2, 0]]
+    [
+      [0, 0],
+      [1, 1],
+      [2, 2],
+    ],
+    [
+      [0, 2],
+      [1, 1],
+      [2, 0],
+    ],
   ];
 
   printBoard = () => {
-    for(let row of this.gameboardArr){
+    for (let row of this.gameboardArr) {
       console.log(row.join(" | "));
     }
-  }
+  };
 
   updateBoard = (row, col, playerSymbol) => {
-    if(this.gameboardArr[row][col] == ""){
+    if (this.gameboardArr[row][col] == "") {
       this.gameboardArr[row][col] = playerSymbol;
       return true;
     }
     return false;
-  }
+  };
 
-  checkWin = (playerSymbol) => this.winConditions.some((condition) => condition.every(([row, col]) => this.gameboardArr[row][col] === playerSymbol));
+  checkWin = (playerSymbol) =>
+    this.winConditions.some((condition) =>
+      condition.every(
+        ([row, col]) => this.gameboardArr[row][col] === playerSymbol,
+      ),
+    );
 
-  isFull = () => this.gameboardArr.every(row => row.every(col => col !== ""));
+  isFull = () =>
+    this.gameboardArr.every((row) => row.every((col) => col !== ""));
 }
 
 class Player {
@@ -46,32 +84,72 @@ class Player {
     this.#symbol = symbol;
   }
 
-  get symbol(){
+  get symbol() {
     return this.#symbol;
   }
-
 }
-
 
 class GameFlow {
-  gameBoard = new GameBoard();
+  #gameBoard = new GameBoard();
+  #players = [new Player("Player 1", "X"), new Player("Player 2", "O")];
+  #currentPlayerIndex = 0;
 
-  intro = () => {
-    console.log("TIC-TAC-TOE");
-    this.gameBoard.printBoard();
-    this.gameStart();
+  get gameBoard() {
+    return this.#gameBoard;
   }
 
-  
-  gameStart = () => {
-    let player1 = new Player("Player 1", "X");
-    let player2 = new Player("Player 2", "O");
+  get players() {
+    return this.#players;
+  }
 
-    let coordsPlayer1 = prompt("Coordenadas p1: ").split(",").map((val) => parseInt(val));
-    let coordsPlayer2 = prompt("Coordenadas p2: ").split(",").map((val) => parseInt(val));
+  get currentPlayerIndex() {
+    return this.#currentPlayerIndex;
+  }
 
+  set currentPlayerIndex(value) {
+    if(value < 0 || value > 1){
+      console.log("Invalid value for currentPlayerIndex");
+      return;
+    }
+    this.#currentPlayerIndex = value;
+  }
+
+  startGame = () => {
+    console.log("TIC-TAC-TOE");
+    this.gameBoard.printBoard();
+    this.playTurn();
+  }
+
+  playTurn = () => {
+    const currentPlayer = this.players[this.currentPlayerIndex];
+    const [row, col] = prompt(
+      `${currentPlayer.name} (${currentPlayer.symbol}), enter your move (row, col):`,
+    )
+      .split(",")
+      .map(Number);
+
+    if(this.gameBoard.updateBoard(row, col, currentPlayer.symbol)) {
+      this.gameBoard.printBoard();
+
+      if (this.gameBoard.checkWin(currentPlayer.symbol)) {
+        console.log(`${currentPlayer.name} wins!`);
+        return;
+      }
+
+      if(this.gameBoard.isFull()) {
+        console.log("It's a tie!");
+        return;
+      }
+
+      this.currentPlayerIndex = 1 - this.currentPlayerIndex;
+      this.playTurn();
+    } else {
+      console.log("Invalid move, try again.");
+      this.playTurn();
+    }
   }
 }
 
-let gameHandler = new GameFlow();
-gameHandler.intro();
+const game = new GameFlow();
+game.startGame();
+
