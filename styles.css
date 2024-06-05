@@ -1,0 +1,58 @@
+:root {
+  font-size: 16px;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  text-align: center;
+  background-color: #F6E9B2;
+}
+
+.heading-text {
+  font-family: "Lobster", sans-serif;
+  font-size: 5rem;
+  letter-spacing: 1rem;
+  color: #0A6847;
+  text-shadow: 1px -1px 2px black;
+}
+
+.gameboard-container {
+  margin: 0 auto;
+  width: 620px;
+  height: 620px;
+  background-color: #F3CA52;
+  box-shadow: 2px 2px 3px #0A6847;
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 10px;
+  grid-template-rows: repeat(3, 1fr);
+  row-gap: 10px;
+}
+
+.cell {
+  height: 200px;
+  width: 200px;
+  background-color: #7ABA78;
+  border: 1px solid black;
+  font-size: 8rem;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cell[disabled]{
+  color: black;
+}

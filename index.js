@@ -92,6 +92,7 @@ class Player {
 class GameFlow {
   #gameBoard = new GameBoard();
   #players = [new Player("Player 1", "X"), new Player("Player 2", "O")];
+  #displayHandler = new DisplayHandler();
   #currentPlayerIndex = 0;
 
   get gameBoard() {
@@ -107,7 +108,7 @@ class GameFlow {
   }
 
   set currentPlayerIndex(value) {
-    if(value < 0 || value > 1){
+    if (value < 0 || value > 1) {
       console.log("Invalid value for currentPlayerIndex");
       return;
     }
@@ -115,41 +116,101 @@ class GameFlow {
   }
 
   startGame = () => {
-    console.log("TIC-TAC-TOE");
-    this.gameBoard.printBoard();
-    this.playTurn();
+    //console.log("TIC-TAC-TOE");
+    //this.gameBoard.printBoard();
+    this.#displayHandler.printBoard(this.gameBoard.gameboardArr);
+
+    this.#displayHandler.gameCells.forEach((cell) => cell.addEventListener("click", (event) => {
+      this.playTurn(event.target.id);
+    }));
   }
 
-  playTurn = () => {
+  playTurn = (cellID) => {
     const currentPlayer = this.players[this.currentPlayerIndex];
+    const [row, col] = cellID.split(",").map(Number);
+    this.#displayHandler.printCurrentPlayer(`${currentPlayer.name} placed on cell: (${row + 1}, ${col + 1})`);
+
+    /*
     const [row, col] = prompt(
       `${currentPlayer.name} (${currentPlayer.symbol}), enter your move (row, col):`,
     )
       .split(",")
       .map(Number);
+    */
 
-    if(this.gameBoard.updateBoard(row, col, currentPlayer.symbol)) {
+    if (this.gameBoard.updateBoard(row, col, currentPlayer.symbol)) {
+
+      this.#displayHandler.printBoard(this.gameBoard.gameboardArr);
       this.gameBoard.printBoard();
 
       if (this.gameBoard.checkWin(currentPlayer.symbol)) {
         console.log(`${currentPlayer.name} wins!`);
+        this.#displayHandler.printWinner(`${currentPlayer.name} wins!`);
+        this.#displayHandler.disableCells();
         return;
       }
 
-      if(this.gameBoard.isFull()) {
+      if (this.gameBoard.isFull()) {
         console.log("It's a tie!");
+        this.#displayHandler.printWinner("It's a tie!");
+        this.#displayHandler.disableCells();
         return;
       }
 
       this.currentPlayerIndex = 1 - this.currentPlayerIndex;
-      this.playTurn();
     } else {
       console.log("Invalid move, try again.");
-      this.playTurn();
+      this.#displayHandler.printWinner("Invalid move, try again.");
+      this.playTurn(cellID);
     }
+  }
+}
+
+class DisplayHandler {
+  #gameCells = document.querySelectorAll(".cell");
+  #winnerDisplay = document.querySelector(".winner");
+  #currentPlayerDisplay = document.querySelector(".current-player");
+
+  get gameCells(){
+    return this.#gameCells;
+  }
+
+  get currentPlayerDisplay(){
+    return this.#currentPlayerDisplay;
+  }
+
+  get winnerDisplay(){
+    return this.#winnerDisplay;
+  }
+
+  printBoard = (boardArr) => {
+    let flatBoard = boardArr.flat();
+
+    this.#gameCells.forEach((cell, index) => {
+      cell.textContent = flatBoard[index];
+    });
+  }
+
+  printCurrentPlayer = (text) => {
+    this.currentPlayerDisplay.textContent = text;
+  }
+
+  printWinner = (text) => {
+    this.winnerDisplay.textContent = text;
+  }
+
+  disableCells = () => {
+    this.gameCells.forEach((cell) => {
+      cell.setAttribute("disabled", "true");
+    })
+  }
+
+  enableCells = () => {
+    this.gameCells.forEach((cell) => {
+      cell.removeAttribute("disabled");
+    })
   }
 }
 
 const game = new GameFlow();
 game.startGame();
-
