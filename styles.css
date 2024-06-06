@@ -51,8 +51,16 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+
+  transition: 250ms;
 }
 
 .cell[disabled]{
   color: black;
+}
+
+.cell:hover{
+  border: 1px solid blue;
+  cursor: pointer;
+  transform: scale(1.04);
 }
