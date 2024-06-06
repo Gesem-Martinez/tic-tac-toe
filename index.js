@@ -131,16 +131,7 @@ class GameFlow {
       new Player(player1Name, "X"),
       new Player(player2Name, "O"),
     ];
-    this.#displayHandler.printCurrentPlayer(
-      this.players[this.currentPlayerIndex].name,
-    );
-    this.#displayHandler.printBoard(this.gameBoard.gameboardArr);
-
-    this.#displayHandler.gameCells.forEach((cell) =>
-      cell.addEventListener("click", (event) => {
-        this.playTurn(event.target.id);
-      }),
-    );
+    this.restartGame();
   };
 
   playTurn = (cellID) => {
@@ -164,6 +155,7 @@ class GameFlow {
         console.log(`${currentPlayer.name} wins!`);
         this.#displayHandler.printWinner(`${currentPlayer.name} wins!`);
         this.#displayHandler.disableCells();
+        document.getElementById("restart-game").style.display = "inline";
         return;
       }
 
@@ -171,6 +163,7 @@ class GameFlow {
         console.log("It's a tie!");
         this.#displayHandler.printWinner("It's a tie!");
         this.#displayHandler.disableCells();
+        document.getElementById("restart-game").style.display = "inline";
         return;
       }
 
@@ -184,13 +177,26 @@ class GameFlow {
     }
   };
 
+  handleCellClick = (event) => {
+    this.playTurn(event.target.id);
+  };
+
   restartGame = () => {
     this.#gameBoard.resetBoard();
     this.#currentPlayerIndex = 0;
     this.#displayHandler.printBoard(this.#gameBoard.gameboardArr);
-    this.#displayHandler.printCurrentPlayer(this.players[this.currentPlayerIndex].name);
+    this.#displayHandler.printCurrentPlayer(
+      this.players[this.currentPlayerIndex].name,
+    );
     this.#displayHandler.enableCells();
     this.#displayHandler.printWinner("");
+
+    this.#displayHandler.gameCells.forEach((cell) => {
+      cell.removeEventListener("click", this.handleCellClick);
+      cell.addEventListener("click", this.handleCellClick);
+    });
+
+    document.getElementById("restart-game").style.display = "none";
   };
 }
 
@@ -220,7 +226,7 @@ class DisplayHandler {
   };
 
   printCurrentPlayer = (text) => {
-    this.currentPlayerDisplay.textContent = text;
+    this.currentPlayerDisplay.textContent = `${text}'s turn`;
   };
 
   printWinner = (text) => {
@@ -240,16 +246,20 @@ class DisplayHandler {
   };
 }
 
-const game = new GameFlow();
+let game = new GameFlow();
+
 document.getElementById("start-game").addEventListener("click", () => {
   const player1Name =
     document.getElementById("player1-name").value || "Player 1";
   const player2Name =
     document.getElementById("player2-name").value || "Player 2";
+
   game.startGame(player1Name, player2Name);
+
+  document.getElementById("player1-name").value = "";
+  document.getElementById("player2-name").value = "";
 });
 
 document.getElementById("restart-game").addEventListener("click", () => {
   game.restartGame();
-})
-
+});
