@@ -73,6 +73,14 @@ class GameBoard {
 
   isFull = () =>
     this.gameboardArr.every((row) => row.every((col) => col !== ""));
+
+  resetBoard = () => {
+    this.gameboardArr = [
+      ["", "", ""],
+      ["", "", ""],
+      ["", "", ""],
+    ];
+  };
 }
 
 class Player {
@@ -91,7 +99,8 @@ class Player {
 
 class GameFlow {
   #gameBoard = new GameBoard();
-  #players = [new Player("Player 1", "X"), new Player("Player 2", "O")];
+  #players = [];
+  //#players = [new Player("Player 1", "X"), new Player("Player 2", "O")];
   #displayHandler = new DisplayHandler();
   #currentPlayerIndex = 0;
 
@@ -115,20 +124,29 @@ class GameFlow {
     this.#currentPlayerIndex = value;
   }
 
-  startGame = () => {
+  startGame = (player1Name, player2Name) => {
     //console.log("TIC-TAC-TOE");
     //this.gameBoard.printBoard();
+    this.#players = [
+      new Player(player1Name, "X"),
+      new Player(player2Name, "O"),
+    ];
+    this.#displayHandler.printCurrentPlayer(
+      this.players[this.currentPlayerIndex].name,
+    );
     this.#displayHandler.printBoard(this.gameBoard.gameboardArr);
 
-    this.#displayHandler.gameCells.forEach((cell) => cell.addEventListener("click", (event) => {
-      this.playTurn(event.target.id);
-    }));
-  }
+    this.#displayHandler.gameCells.forEach((cell) =>
+      cell.addEventListener("click", (event) => {
+        this.playTurn(event.target.id);
+      }),
+    );
+  };
 
   playTurn = (cellID) => {
     const currentPlayer = this.players[this.currentPlayerIndex];
     const [row, col] = cellID.split(",").map(Number);
-    this.#displayHandler.printCurrentPlayer(`${currentPlayer.name} placed on cell: (${row + 1}, ${col + 1})`);
+    this.#displayHandler.printCurrentPlayer(currentPlayer.name);
 
     /*
     const [row, col] = prompt(
@@ -139,7 +157,6 @@ class GameFlow {
     */
 
     if (this.gameBoard.updateBoard(row, col, currentPlayer.symbol)) {
-
       this.#displayHandler.printBoard(this.gameBoard.gameboardArr);
       this.gameBoard.printBoard();
 
@@ -158,12 +175,23 @@ class GameFlow {
       }
 
       this.currentPlayerIndex = 1 - this.currentPlayerIndex;
+      this.#displayHandler.printCurrentPlayer(
+        this.players[this.currentPlayerIndex].name,
+      );
     } else {
       console.log("Invalid move, try again.");
       this.#displayHandler.printWinner("Invalid move, try again.");
-      this.playTurn(cellID);
     }
-  }
+  };
+
+  restartGame = () => {
+    this.#gameBoard.resetBoard();
+    this.#currentPlayerIndex = 0;
+    this.#displayHandler.printBoard(this.#gameBoard.gameboardArr);
+    this.#displayHandler.printCurrentPlayer(this.players[this.currentPlayerIndex].name);
+    this.#displayHandler.enableCells();
+    this.#displayHandler.printWinner("");
+  };
 }
 
 class DisplayHandler {
@@ -171,15 +199,15 @@ class DisplayHandler {
   #winnerDisplay = document.querySelector(".winner");
   #currentPlayerDisplay = document.querySelector(".current-player");
 
-  get gameCells(){
+  get gameCells() {
     return this.#gameCells;
   }
 
-  get currentPlayerDisplay(){
+  get currentPlayerDisplay() {
     return this.#currentPlayerDisplay;
   }
 
-  get winnerDisplay(){
+  get winnerDisplay() {
     return this.#winnerDisplay;
   }
 
@@ -189,28 +217,39 @@ class DisplayHandler {
     this.#gameCells.forEach((cell, index) => {
       cell.textContent = flatBoard[index];
     });
-  }
+  };
 
   printCurrentPlayer = (text) => {
     this.currentPlayerDisplay.textContent = text;
-  }
+  };
 
   printWinner = (text) => {
     this.winnerDisplay.textContent = text;
-  }
+  };
 
   disableCells = () => {
     this.gameCells.forEach((cell) => {
       cell.setAttribute("disabled", "true");
-    })
-  }
+    });
+  };
 
   enableCells = () => {
     this.gameCells.forEach((cell) => {
       cell.removeAttribute("disabled");
-    })
-  }
+    });
+  };
 }
 
 const game = new GameFlow();
-game.startGame();
+document.getElementById("start-game").addEventListener("click", () => {
+  const player1Name =
+    document.getElementById("player1-name").value || "Player 1";
+  const player2Name =
+    document.getElementById("player2-name").value || "Player 2";
+  game.startGame(player1Name, player2Name);
+});
+
+document.getElementById("restart-game").addEventListener("click", () => {
+  game.restartGame();
+})
+
